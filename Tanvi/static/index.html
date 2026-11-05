@@ -15,7 +15,6 @@
     button:disabled { opacity: .65; cursor: wait; }
     [hidden] { display: none !important; }
 
-    /* The welcome screen only asks for the rider's name. */
     #welcome-screen { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
     .welcome-card { width: min(100%, 520px); padding: clamp(24px, 5vw, 44px); border: 1px solid #31546b; border-radius: 24px; background: #10283a; box-shadow: 0 24px 70px #0006; }
     h1 { margin: 0; font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1.08; }
@@ -27,16 +26,7 @@
     .welcome-hint { margin: 18px 0 0; color: #b6d2e0; font-size: .94rem; }
     .status { min-height: 1.4em; margin: 12px 0 0; color: #ffe28a; }
 
-    /* The race takes the entire available viewport after the name is submitted. */
     #game-screen { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; background: #10283a; }
-    .hud { position: absolute; z-index: 4; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
-    .badge { padding: 9px 14px; border: 1px solid #6c9bb2; border-radius: 12px; background: #081b2ddd; box-shadow: 0 4px 16px #0004; font-weight: 750; }
-    .badge span { color: #71e4ff; }
-    .game-actions { position: absolute; z-index: 6; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: flex; gap: 8px; }
-    .game-actions button { padding: 9px 13px; font-size: .9rem; }
-    #rider-badge { margin-right: auto; }
-    #score-badge { margin: 0 auto; }
-    #next-badge { margin-left: auto; }
     #game { position: absolute; inset: 0; overflow: hidden; background: #36794d; }
     .road { position: absolute; inset: 0 12%; overflow: hidden; background: #424d5a; border-left: 8px solid #e8dfb2; border-right: 8px solid #e8dfb2; }
     .lane-line { position: absolute; inset-block: 0; width: 5px; background: repeating-linear-gradient(to bottom, #f8f2d4 0 54px, transparent 54px 100px); opacity: .9; animation: road-scroll .7s linear infinite; }
@@ -44,13 +34,21 @@
     @keyframes road-scroll { to { background-position-y: 100px; } }
     .edge-grass { position: absolute; inset-block: 0; width: 12%; background: repeating-linear-gradient(45deg, #357a47 0 22px, #3f8a51 22px 44px); }
     .edge-grass.left { left: 0; } .edge-grass.right { right: 0; }
-    .rider, .traffic { position: absolute; width: clamp(76px, 12vw, 150px); height: auto; z-index: 3; object-fit: contain; user-select: none; -webkit-user-drag: none; }
-    .rider { bottom: max(5%, env(safe-area-inset-bottom)); transform: translateX(-50%); transition: left .13s ease-out; }
-    .traffic { top: -220px; width: clamp(76px, 12vw, 150px); transform: translateX(-50%); }
+    .rider, .traffic { position: absolute; width: clamp(76px, 12vw, 150px); height: auto; z-index: 3; object-fit: contain; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+    /* No horizontal easing: the sprite and collision lane always agree. */
+    .rider { bottom: max(5%, env(safe-area-inset-bottom)); transform: translateX(-50%); }
+    .traffic { top: -220px; transform: translateX(-50%); }
+    .hud { position: absolute; z-index: 4; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
+    .badge { padding: 9px 14px; border: 1px solid #6c9bb2; border-radius: 12px; background: #081b2ddd; box-shadow: 0 4px 16px #0004; font-weight: 750; }
+    .badge span { color: #71e4ff; }
+    #score-badge { margin: 0 auto; }
+    .game-actions { position: absolute; z-index: 6; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: flex; gap: 8px; }
+    .game-actions button { padding: 9px 13px; font-size: .9rem; }
     .overlay { position: absolute; z-index: 5; inset: 0; display: grid; place-items: center; padding: 24px; background: #071523bb; text-align: center; }
     .overlay-card { width: min(100%, 390px); padding: 26px; border: 1px solid #6c9bb2; border-radius: 18px; background: #10283a; box-shadow: 0 14px 40px #0006; }
     .overlay h2 { margin: 0 0 10px; font-size: clamp(1.5rem, 4vw, 2rem); }
     .overlay p { color: #c8dce7; line-height: 1.5; }
+    .overlay button { margin: 4px; }
     .touch-controls { position: absolute; z-index: 4; bottom: max(18px, env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; pointer-events: none; }
     .touch-controls button { width: 64px; height: 64px; padding: 0; border: 2px solid #ffffff99; border-radius: 50%; color: white; background: #081b2dcc; font-size: 1.8rem; pointer-events: auto; touch-action: manipulation; }
     @media (max-width: 600px) {
@@ -63,7 +61,6 @@
       .lane-line { width: 4px; }
       .rider, .traffic { width: clamp(68px, 19vw, 112px); }
     }
-    @media (pointer: fine) { .touch-controls { opacity: .72; } }
   </style>
 </head>
 <body>
@@ -102,9 +99,9 @@
         </div>
       </div>
       <div class="hud" aria-live="polite">
-        <div id="rider-badge" class="badge">Rider: <span id="rider-name">—</span></div>
+        <div class="badge">Rider: <span id="rider-name">—</span></div>
         <div id="score-badge" class="badge">Score: <span id="score">0</span></div>
-        <div id="next-badge" class="badge">Next 100: <span id="next-point">1:00</span></div>
+        <div class="badge">Next 100: <span id="next-point">1:00</span></div>
       </div>
       <div class="game-actions">
         <button id="fullscreen-button" type="button">⛶ Fullscreen</button>
@@ -130,25 +127,28 @@
   const nameEl = document.querySelector('#rider-name');
   const scoreEl = document.querySelector('#score');
   const nextPointEl = document.querySelector('#next-point');
-  const lanes = [1 / 6, 1 / 2, 5 / 6];
+  const laneFractions = [1 / 6, 1 / 2, 5 / 6];
   const trafficImages = ['/Images/car.svg', '/Images/motorbike.svg'];
   let lane = 1;
   let gameId = null;
   let running = false;
   let traffic = [];
-  let lastSpawn = 0;
+  let nextSpawnAt = 0;
   let animationId = 0;
   let elapsedSeconds = 0;
+  let gameStartedAt = 0;
   let scoreTimer = null;
+  let clockTimer = null;
 
   function laneCenter(index) {
-    const roadLeft = road.offsetLeft;
-    return roadLeft + road.clientWidth * lanes[index];
+    const gameRect = game.getBoundingClientRect();
+    const roadRect = road.getBoundingClientRect();
+    return roadRect.left - gameRect.left + roadRect.width * laneFractions[index];
   }
   function setLane() { player.style.left = `${laneCenter(lane)}px`; }
   function updateClock() {
     const remainder = 60 - (elapsedSeconds % 60);
-    nextPointEl.textContent = `0:${String(remainder).padStart(2, '0')}`;
+    nextPointEl.textContent = `1:${String(remainder === 60 ? 0 : remainder).padStart(2, '0')}`;
   }
   function removeTraffic() {
     traffic.forEach((item) => item.element.remove());
@@ -176,47 +176,57 @@
     lane = Math.max(0, Math.min(2, lane + direction));
     setLane();
   }
-  function spawnTraffic() {
+  function spawnTraffic(now) {
+    // One obstacle at a time guarantees there is always a free lane and a clear path.
+    if (traffic.length) return;
     const element = document.createElement('img');
     element.className = 'traffic';
-    element.src = trafficImages[Math.random() < .58 ? 0 : 1];
-    element.alt = element.src.includes('car') ? 'Oncoming car' : 'Oncoming bike';
+    const imagePath = trafficImages[Math.random() < .58 ? 0 : 1];
+    element.src = imagePath;
+    element.alt = imagePath.includes('car') ? 'Oncoming car' : 'Oncoming bike';
     const trafficLane = Math.floor(Math.random() * 3);
     element.style.left = `${laneCenter(trafficLane)}px`;
     trafficLayer.append(element);
-    traffic.push({ element, lane: trafficLane, y: -220, speed: 185 + Math.random() * 35 });
+    traffic.push({ element, lane: trafficLane, y: -240, speed: 170 + Math.random() * 25 });
+    nextSpawnAt = now + 500;
   }
   async function endGame(reason) {
     if (!running) return;
     running = false;
     cancelAnimationFrame(animationId);
     clearInterval(scoreTimer);
+    clearInterval(clockTimer);
     const finalScore = await refreshScore(true);
     removeTraffic();
     overlayTitle.textContent = 'Ride complete!';
     overlayMessage.textContent = `${reason} Your final score is ${finalScore} points.`;
     overlay.hidden = false;
   }
+  function rectanglesOverlap(a, b) {
+    // A small inset makes collision detection forgiving and avoids edge-touch false hits.
+    const insetA = Math.min(12, a.width * .12, a.height * .08);
+    const insetB = Math.min(12, b.width * .12, b.height * .08);
+    return a.left + insetA < b.right - insetB && a.right - insetA > b.left + insetB &&
+      a.top + insetA < b.bottom - insetB && a.bottom - insetA > b.top + insetB;
+  }
   function tick(now) {
     if (!running) return;
     const dt = Math.min((now - (tick.last || now)) / 1000, .05);
     tick.last = now;
-    if (now - lastSpawn > 900 + Math.random() * 450) {
-      spawnTraffic();
-      lastSpawn = now;
-    }
-    const playerTop = player.offsetTop;
-    const playerBottom = playerTop + player.offsetHeight;
+    if (!traffic.length && now >= nextSpawnAt) spawnTraffic(now);
+    const gameRect = game.getBoundingClientRect();
+    const playerRect = player.getBoundingClientRect();
     traffic = traffic.filter((item) => {
       item.y += item.speed * dt;
       item.element.style.top = `${item.y}px`;
-      const trafficBottom = item.y + item.element.offsetHeight;
-      if (item.lane === lane && trafficBottom > playerTop + 18 && item.y < playerBottom - 14) {
+      const trafficRect = item.element.getBoundingClientRect();
+      if (trafficRect.width && trafficRect.height && playerRect.width && playerRect.height && rectanglesOverlap(playerRect, trafficRect)) {
         endGame('You bumped into traffic!');
         return true;
       }
-      if (item.y > game.clientHeight + 20) {
+      if (item.y > gameRect.height + 30) {
         item.element.remove();
+        nextSpawnAt = now + 550;
         return false;
       }
       return true;
@@ -235,6 +245,7 @@
     nameEl.textContent = data.username;
     scoreEl.textContent = '0';
     elapsedSeconds = 0;
+    gameStartedAt = performance.now();
     updateClock();
     lane = 1;
     removeTraffic();
@@ -243,10 +254,16 @@
     overlay.hidden = true;
     setLane();
     running = true;
-    lastSpawn = performance.now();
+    nextSpawnAt = performance.now() + 1200;
     tick.last = 0;
     animationId = requestAnimationFrame(tick);
     scoreTimer = setInterval(() => refreshScore(), 5000);
+    clockTimer = setInterval(() => {
+      if (!running) return;
+      elapsedSeconds = Math.floor((performance.now() - gameStartedAt) / 1000);
+      scoreEl.textContent = Math.floor(elapsedSeconds / 60) * 100;
+      updateClock();
+    }, 250);
   }
 
   form.addEventListener('submit', async (event) => {
@@ -254,7 +271,6 @@
     if (running) return;
     startButton.disabled = true;
     statusEl.textContent = 'Getting your bike ready…';
-    // Ask the browser for fullscreen while this submit still has user activation.
     if (gameScreen.requestFullscreen) gameScreen.requestFullscreen().catch(() => {});
     try {
       await startGame();
@@ -266,12 +282,7 @@
     }
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && running && document.fullscreenElement) {
-      // Escape leaves browser fullscreen; the game remains full-viewport until quit.
-      return;
-    }
-    if (!['ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D'].includes(event.key)) return;
-    if (!running) return;
+    if (!['ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D'].includes(event.key) || !running) return;
     event.preventDefault();
     move(event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a' ? -1 : 1);
   });
@@ -299,7 +310,7 @@
     if (!document.fullscreenElement && gameScreen.requestFullscreen) gameScreen.requestFullscreen().catch(() => {});
     else if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   });
-  window.addEventListener('resize', setLane);
+  window.addEventListener('resize', () => { if (!gameScreen.hidden) setLane(); });
 })();
 </script>
 </body>
