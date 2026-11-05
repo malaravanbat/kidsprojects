@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 180" role="img" aria-label="Oncoming motorbike">
+  <ellipse cx="60" cy="164" rx="38" ry="8" fill="#071525" opacity=".28"/>
+  <circle cx="60" cy="139" r="22" fill="#13283b" stroke="#f2f8ff" stroke-width="5"/><circle cx="60" cy="139" r="5" fill="#f8cc4b"/>
+  <path d="m60 118-23 21h46l-23-21Z" fill="#f8cc4b" stroke="#fff0b0" stroke-width="3"/>
+  <path d="M36 112c1-13 9-21 24-21s23 8 24 21l8 13H28l8-13Z" fill="#36b882" stroke="#d8ffeb" stroke-width="4"/>
+  <path d="M44 97c1-13 7-20 16-20s15 7 16 20" fill="#d9f3ff" stroke="#fff" stroke-width="4"/>
+  <circle cx="60" cy="65" r="16" fill="#ffd2a6"/><path d="M43 64c1-14 7-22 17-22s17 8 17 22c-9-5-23-5-34 0Z" fill="#f8cc4b" stroke="#fff0b0" stroke-width="3"/>
+  <path d="m44 113-13 20M76 113l13 20" stroke="#36b882" stroke-linecap="round" stroke-width="8"/>
+</svg>
