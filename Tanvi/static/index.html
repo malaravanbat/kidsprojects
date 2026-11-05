@@ -2,150 +2,179 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081722">
   <title>Tanvi's Bike Race</title>
   <style>
-    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; color: #f7fbff; background: radial-gradient(ellipse at top, #174c66, #0b1c2b 62%, #08131f); }
     button, input { font: inherit; }
-    .page { width: min(100% - 28px, 920px); margin: 0 auto; padding: 24px 0 42px; }
-    header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
-    h1 { font-size: clamp(1.45rem, 4vw, 2.2rem); margin: 0; }
-    .subtitle { color: #b6d2e0; margin: 4px 0 0; }
-    .panel { background: #10283a; border: 1px solid #31546b; border-radius: 16px; padding: 18px; box-shadow: 0 14px 36px #0003; }
-    .start-row { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
-    label { display: grid; gap: 6px; color: #c9e2ef; font-size: .92rem; }
-    input { width: min(100%, 290px); padding: 10px 12px; color: #102030; background: #f5fbff; border: 2px solid transparent; border-radius: 9px; }
-    input:focus { outline: 3px solid #53dcff; }
-    button { border: 0; border-radius: 9px; padding: 11px 18px; color: #062136; background: #55dbff; font-weight: 800; cursor: pointer; }
+    button { border: 0; border-radius: 10px; padding: 12px 20px; color: #062136; background: #55dbff; font-weight: 800; cursor: pointer; }
     button:hover { background: #8be8ff; }
-    button:disabled { opacity: .6; cursor: wait; }
-    .hint { margin: 13px 0 0; color: #b6d2e0; font-size: .92rem; }
-    .status { min-height: 1.4em; margin: 10px 0 0; color: #ffe28a; }
-    .hud { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
-    .badge { background: #10283a; border: 1px solid #31546b; padding: 9px 14px; border-radius: 12px; font-weight: 700; }
+    button:disabled { opacity: .65; cursor: wait; }
+    [hidden] { display: none !important; }
+
+    /* The welcome screen only asks for the rider's name. */
+    #welcome-screen { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+    .welcome-card { width: min(100%, 520px); padding: clamp(24px, 5vw, 44px); border: 1px solid #31546b; border-radius: 24px; background: #10283a; box-shadow: 0 24px 70px #0006; }
+    h1 { margin: 0; font-size: clamp(2rem, 7vw, 3.2rem); line-height: 1.08; }
+    .subtitle { margin: 12px 0 28px; color: #b6d2e0; font-size: 1.08rem; }
+    form { display: grid; gap: 12px; }
+    label { color: #c9e2ef; font-weight: 650; }
+    input { width: 100%; padding: 14px; color: #102030; background: #f5fbff; border: 2px solid transparent; border-radius: 10px; }
+    input:focus { outline: 3px solid #53dcff; }
+    .welcome-hint { margin: 18px 0 0; color: #b6d2e0; font-size: .94rem; }
+    .status { min-height: 1.4em; margin: 12px 0 0; color: #ffe28a; }
+
+    /* The race takes the entire available viewport after the name is submitted. */
+    #game-screen { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; background: #10283a; }
+    .hud { position: absolute; z-index: 4; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
+    .badge { padding: 9px 14px; border: 1px solid #6c9bb2; border-radius: 12px; background: #081b2ddd; box-shadow: 0 4px 16px #0004; font-weight: 750; }
     .badge span { color: #71e4ff; }
-    #game { position: relative; width: min(100%, 500px); height: min(68vh, 640px); min-height: 390px; margin: 0 auto; overflow: hidden; border: 5px solid #c9f3ff; border-radius: 20px; background: #36794d; box-shadow: 0 14px 50px #0006; }
-    .road { position: absolute; inset: 0 13% 0; overflow: hidden; background: #424d5a; border-left: 8px solid #e8dfb2; border-right: 8px solid #e8dfb2; }
-    .lane-line { position: absolute; inset-block: 0; width: 5px; background: repeating-linear-gradient(to bottom, #f8f2d4 0 42px, transparent 42px 78px); opacity: .9; animation: road-scroll .75s linear infinite; }
+    .game-actions { position: absolute; z-index: 6; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); display: flex; gap: 8px; }
+    .game-actions button { padding: 9px 13px; font-size: .9rem; }
+    #rider-badge { margin-right: auto; }
+    #score-badge { margin: 0 auto; }
+    #next-badge { margin-left: auto; }
+    #game { position: absolute; inset: 0; overflow: hidden; background: #36794d; }
+    .road { position: absolute; inset: 0 12%; overflow: hidden; background: #424d5a; border-left: 8px solid #e8dfb2; border-right: 8px solid #e8dfb2; }
+    .lane-line { position: absolute; inset-block: 0; width: 5px; background: repeating-linear-gradient(to bottom, #f8f2d4 0 54px, transparent 54px 100px); opacity: .9; animation: road-scroll .7s linear infinite; }
     .lane-line.one { left: 33.333%; } .lane-line.two { left: 66.666%; }
-    @keyframes road-scroll { to { background-position-y: 78px; } }
-    .edge-grass { position: absolute; inset-block: 0; width: 13%; background: repeating-linear-gradient(45deg, #357a47 0 20px, #3f8a51 20px 40px); }
+    @keyframes road-scroll { to { background-position-y: 100px; } }
+    .edge-grass { position: absolute; inset-block: 0; width: 12%; background: repeating-linear-gradient(45deg, #357a47 0 22px, #3f8a51 22px 44px); }
     .edge-grass.left { left: 0; } .edge-grass.right { right: 0; }
-    .rider, .traffic { position: absolute; width: 20%; height: auto; z-index: 3; object-fit: contain; transition: left .13s ease-out; user-select: none; -webkit-user-drag: none; }
-    .rider { bottom: 3%; transform: translateX(-50%); }
-    .traffic { top: -190px; transform: translateX(-50%); }
-    .paused #game { filter: saturate(.6); }
-    .overlay { position: absolute; z-index: 5; inset: 0; display: grid; place-items: center; background: #071523bb; text-align: center; padding: 24px; }
-    .overlay[hidden] { display: none; }
-    .overlay-card { max-width: 320px; background: #10283a; border: 1px solid #6c9bb2; border-radius: 16px; padding: 20px; }
-    .overlay h2 { margin: 0 0 8px; }
-    .overlay p { color: #c8dce7; }
-    .bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
-    .bottom h2 { margin: 0 0 8px; font-size: 1.08rem; }
-    .bottom p, .bottom li { color: #c3d9e5; }
-    #leaderboard { margin: 0; padding-left: 22px; }
-    @media (max-width: 600px) { .page { width: min(100% - 18px, 920px); padding-top: 16px; } .panel { padding: 14px; } .bottom { grid-template-columns: 1fr; } #game { height: 62vh; min-height: 360px; } }
+    .rider, .traffic { position: absolute; width: clamp(76px, 12vw, 150px); height: auto; z-index: 3; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+    .rider { bottom: max(5%, env(safe-area-inset-bottom)); transform: translateX(-50%); transition: left .13s ease-out; }
+    .traffic { top: -220px; width: clamp(76px, 12vw, 150px); transform: translateX(-50%); }
+    .overlay { position: absolute; z-index: 5; inset: 0; display: grid; place-items: center; padding: 24px; background: #071523bb; text-align: center; }
+    .overlay-card { width: min(100%, 390px); padding: 26px; border: 1px solid #6c9bb2; border-radius: 18px; background: #10283a; box-shadow: 0 14px 40px #0006; }
+    .overlay h2 { margin: 0 0 10px; font-size: clamp(1.5rem, 4vw, 2rem); }
+    .overlay p { color: #c8dce7; line-height: 1.5; }
+    .touch-controls { position: absolute; z-index: 4; bottom: max(18px, env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 20px; pointer-events: none; }
+    .touch-controls button { width: 64px; height: 64px; padding: 0; border: 2px solid #ffffff99; border-radius: 50%; color: white; background: #081b2dcc; font-size: 1.8rem; pointer-events: auto; touch-action: manipulation; }
+    @media (max-width: 600px) {
+      .welcome-card { border-radius: 18px; }
+      .hud { top: max(68px, calc(env(safe-area-inset-top) + 60px)); }
+      .badge { padding: 7px 9px; font-size: .82rem; }
+      .game-actions button { font-size: .8rem; padding: 8px 10px; }
+      .road { inset-inline: 8%; }
+      .edge-grass { width: 8%; }
+      .lane-line { width: 4px; }
+      .rider, .traffic { width: clamp(68px, 19vw, 112px); }
+    }
+    @media (pointer: fine) { .touch-controls { opacity: .72; } }
   </style>
 </head>
 <body>
-  <main class="page">
-    <header><div><h1>🏁 Tanvi's Bike Race</h1><p class="subtitle">Stay on the road and dodge the traffic!</p></div></header>
-    <section class="panel" aria-label="Start game">
-      <form id="start-form" class="start-row">
-        <label for="username">Rider name<input id="username" name="username" maxlength="24" autocomplete="name" placeholder="Enter your name" required></label>
-        <button id="start-button" type="submit">Start riding</button>
-      </form>
-      <p class="hint">Use ← and → (or A and D) to switch lanes. Every full minute earns 100 points.</p>
-      <p id="status" class="status" role="status" aria-live="polite"></p>
+  <main>
+    <section id="welcome-screen" aria-labelledby="page-title">
+      <div class="welcome-card">
+        <h1 id="page-title">🏁 Tanvi's Bike Race</h1>
+        <p class="subtitle">Stay on the road and dodge the traffic!</p>
+        <form id="start-form">
+          <label for="username">What's your name?</label>
+          <input id="username" name="username" maxlength="24" autocomplete="name" placeholder="Enter your name" required>
+          <button id="start-button" type="submit">Start riding</button>
+        </form>
+        <p class="welcome-hint">Use ← and → or A and D to switch lanes. Earn 100 points for every full minute you ride.</p>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
     </section>
-    <div class="hud" aria-live="polite"><div class="badge">Rider: <span id="rider-name">—</span></div><div class="badge">Score: <span id="score">0</span></div><div class="badge">Next 100 points: <span id="next-point">1:00</span></div></div>
-    <section id="game" aria-label="Three-lane bike race">
-      <div class="edge-grass left"></div><div class="edge-grass right"></div>
-      <div class="road"><div class="lane-line one"></div><div class="lane-line two"></div></div>
-      <img id="player" class="rider" src="/Images/bike.svg" alt="Your blue bike">
-      <div id="overlay" class="overlay"><div class="overlay-card"><h2>Ready, rider?</h2><p>Enter your name above, then start the race. Avoid the oncoming traffic!</p></div></div>
-    </section>
-    <section class="bottom">
-      <div class="panel"><h2>How to play</h2><p>Ride in any of the three lanes. Move left and right to avoid cars and bikes coming toward you. If you hit traffic, the ride ends.</p></div>
-      <div class="panel"><h2>Top riders</h2><ol id="leaderboard"><li>Loading scores…</li></ol></div>
+
+    <section id="game-screen" aria-label="Bike race" hidden>
+      <div id="game">
+        <div class="edge-grass left"></div><div class="edge-grass right"></div>
+        <div class="road"><div class="lane-line one"></div><div class="lane-line two"></div></div>
+        <img id="player" class="rider" src="/Images/bike.svg" alt="Your blue bike">
+        <div id="traffic-layer"></div>
+        <div class="overlay" id="overlay" hidden>
+          <div class="overlay-card">
+            <h2 id="overlay-title">Ride complete!</h2>
+            <p id="overlay-message"></p>
+            <button id="play-again" type="button">Play again</button>
+            <button id="back-to-menu" type="button">Back to start</button>
+          </div>
+        </div>
+        <div class="touch-controls" aria-label="Touch lane controls">
+          <button id="left-button" type="button" aria-label="Move left">←</button>
+          <button id="right-button" type="button" aria-label="Move right">→</button>
+        </div>
+      </div>
+      <div class="hud" aria-live="polite">
+        <div id="rider-badge" class="badge">Rider: <span id="rider-name">—</span></div>
+        <div id="score-badge" class="badge">Score: <span id="score">0</span></div>
+        <div id="next-badge" class="badge">Next 100: <span id="next-point">1:00</span></div>
+      </div>
+      <div class="game-actions">
+        <button id="fullscreen-button" type="button">⛶ Fullscreen</button>
+        <button id="quit-button" type="button">✕ Quit</button>
+      </div>
     </section>
   </main>
 <script>
 (() => {
-  const lanes = [25, 50, 75];
+  const welcome = document.querySelector('#welcome-screen');
+  const gameScreen = document.querySelector('#game-screen');
+  const game = document.querySelector('#game');
+  const road = document.querySelector('.road');
+  const player = document.querySelector('#player');
+  const trafficLayer = document.querySelector('#traffic-layer');
   const form = document.querySelector('#start-form');
   const nameInput = document.querySelector('#username');
   const startButton = document.querySelector('#start-button');
   const statusEl = document.querySelector('#status');
-  const player = document.querySelector('#player');
-  const game = document.querySelector('#game');
   const overlay = document.querySelector('#overlay');
-  const scoreEl = document.querySelector('#score');
+  const overlayTitle = document.querySelector('#overlay-title');
+  const overlayMessage = document.querySelector('#overlay-message');
   const nameEl = document.querySelector('#rider-name');
+  const scoreEl = document.querySelector('#score');
   const nextPointEl = document.querySelector('#next-point');
-  const leaderboard = document.querySelector('#leaderboard');
+  const lanes = [1 / 6, 1 / 2, 5 / 6];
+  const trafficImages = ['/Images/car.svg', '/Images/motorbike.svg'];
   let lane = 1;
   let gameId = null;
   let running = false;
   let traffic = [];
   let lastSpawn = 0;
-  let lastScoreUpdate = 0;
   let animationId = 0;
   let elapsedSeconds = 0;
-  const trafficImages = ['/Images/car.svg', '/Images/motorbike.svg'];
-  const laneCenter = (index) => (lanes[index] / 100) * game.clientWidth;
+  let scoreTimer = null;
 
+  function laneCenter(index) {
+    const roadLeft = road.offsetLeft;
+    return roadLeft + road.clientWidth * lanes[index];
+  }
   function setLane() { player.style.left = `${laneCenter(lane)}px`; }
   function updateClock() {
-    const remainder = Math.max(0, 60 - (elapsedSeconds % 60));
-    nextPointEl.textContent = `${Math.floor(remainder / 60)}:${String(remainder % 60).padStart(2, '0')}`;
+    const remainder = 60 - (elapsedSeconds % 60);
+    nextPointEl.textContent = `0:${String(remainder).padStart(2, '0')}`;
   }
-  async function refreshLeaderboard() {
+  function removeTraffic() {
+    traffic.forEach((item) => item.element.remove());
+    traffic = [];
+  }
+  async function refreshScore(finish = false) {
+    if (!gameId) return Number(scoreEl.textContent) || 0;
     try {
-      const response = await fetch('/api/scores');
-      const data = await response.json();
-      leaderboard.replaceChildren();
-      if (!data.scores.length) { leaderboard.innerHTML = '<li>No scores yet — be the first!</li>'; return; }
-      data.scores.forEach((entry) => {
-        const item = document.createElement('li');
-        item.textContent = `${entry.username}: ${entry.score} points`;
-        leaderboard.append(item);
+      const response = await fetch(finish ? `/api/finish/${gameId}` : `/api/score/${gameId}`, {
+        method: finish ? 'POST' : 'GET'
       });
-    } catch { leaderboard.innerHTML = '<li>Scores unavailable</li>'; }
-  }
-  function removeTraffic() { traffic.forEach((item) => item.element.remove()); traffic = []; }
-  function showOverlay(title, message, buttonText) {
-    overlay.innerHTML = `<div class="overlay-card"><h2>${title}</h2><p>${message}</p><button id="again-button" type="button">${buttonText}</button></div>`;
-    overlay.hidden = false;
-    document.querySelector('#again-button').addEventListener('click', () => {
-      overlay.hidden = true;
-      if (buttonText === 'Play again') { nameInput.value = nameEl.textContent; nameInput.focus(); }
-    });
-  }
-  async function finish(reason) {
-    if (!running) return;
-    running = false;
-    cancelAnimationFrame(animationId);
-    clearInterval(scoreTimer);
-    const points = await readScore(true);
-    removeTraffic();
-    statusEl.textContent = reason;
-    showOverlay('Ride complete!', `${reason} Your final score is ${points} points.`, 'Play again');
-    refreshLeaderboard();
-  }
-  async function readScore(finishGame = false) {
-    if (!gameId) return 0;
-    try {
-      const response = await fetch(finishGame ? `/api/finish/${gameId}` : `/api/score/${gameId}`, { method: finishGame ? 'POST' : 'GET' });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Could not load score.');
+      if (!response.ok) throw new Error(data.error || 'Could not save your score.');
       elapsedSeconds = data.elapsed_seconds;
       scoreEl.textContent = data.score;
       updateClock();
       return data.score;
-    } catch (error) { statusEl.textContent = error.message; return Number(scoreEl.textContent) || 0; }
+    } catch (error) {
+      statusEl.textContent = error.message;
+      return Number(scoreEl.textContent) || 0;
+    }
+  }
+  function move(direction) {
+    if (!running) return;
+    lane = Math.max(0, Math.min(2, lane + direction));
+    setLane();
   }
   function spawnTraffic() {
     const element = document.createElement('img');
@@ -154,68 +183,123 @@
     element.alt = element.src.includes('car') ? 'Oncoming car' : 'Oncoming bike';
     const trafficLane = Math.floor(Math.random() * 3);
     element.style.left = `${laneCenter(trafficLane)}px`;
-    game.append(element);
-    traffic.push({ element, lane: trafficLane, y: -190, speed: 175 + Math.random() * 30 });
+    trafficLayer.append(element);
+    traffic.push({ element, lane: trafficLane, y: -220, speed: 185 + Math.random() * 35 });
+  }
+  async function endGame(reason) {
+    if (!running) return;
+    running = false;
+    cancelAnimationFrame(animationId);
+    clearInterval(scoreTimer);
+    const finalScore = await refreshScore(true);
+    removeTraffic();
+    overlayTitle.textContent = 'Ride complete!';
+    overlayMessage.textContent = `${reason} Your final score is ${finalScore} points.`;
+    overlay.hidden = false;
   }
   function tick(now) {
     if (!running) return;
     const dt = Math.min((now - (tick.last || now)) / 1000, .05);
     tick.last = now;
-    if (now - lastSpawn > 1050 + Math.random() * 450) { spawnTraffic(); lastSpawn = now; }
-    const gameHeight = game.clientHeight;
-    const playerTop = gameHeight * .74;
+    if (now - lastSpawn > 900 + Math.random() * 450) {
+      spawnTraffic();
+      lastSpawn = now;
+    }
+    const playerTop = player.offsetTop;
+    const playerBottom = playerTop + player.offsetHeight;
     traffic = traffic.filter((item) => {
       item.y += item.speed * dt;
       item.element.style.top = `${item.y}px`;
-      if (item.lane === lane && item.y + item.element.offsetHeight > playerTop + 18 && item.y < playerTop + player.offsetHeight - 14) {
-        finish('You bumped into traffic!');
+      const trafficBottom = item.y + item.element.offsetHeight;
+      if (item.lane === lane && trafficBottom > playerTop + 18 && item.y < playerBottom - 14) {
+        endGame('You bumped into traffic!');
         return true;
       }
-      if (item.y > gameHeight + 20) { item.element.remove(); return false; }
+      if (item.y > game.clientHeight + 20) {
+        item.element.remove();
+        return false;
+      }
       return true;
     });
-    if (now - lastScoreUpdate > 5000) { readScore(); lastScoreUpdate = now; }
     animationId = requestAnimationFrame(tick);
   }
-  let scoreTimer;
+  async function startGame() {
+    const response = await fetch('/api/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: nameInput.value })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not start the game.');
+    gameId = data.game_id;
+    nameEl.textContent = data.username;
+    scoreEl.textContent = '0';
+    elapsedSeconds = 0;
+    updateClock();
+    lane = 1;
+    removeTraffic();
+    welcome.hidden = true;
+    gameScreen.hidden = false;
+    overlay.hidden = true;
+    setLane();
+    running = true;
+    lastSpawn = performance.now();
+    tick.last = 0;
+    animationId = requestAnimationFrame(tick);
+    scoreTimer = setInterval(() => refreshScore(), 5000);
+  }
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (running) return;
     startButton.disabled = true;
     statusEl.textContent = 'Getting your bike ready…';
+    // Ask the browser for fullscreen while this submit still has user activation.
+    if (gameScreen.requestFullscreen) gameScreen.requestFullscreen().catch(() => {});
     try {
-      const response = await fetch('/api/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: nameInput.value }) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Could not start the game.');
-      gameId = data.game_id;
-      nameEl.textContent = data.username;
-      scoreEl.textContent = '0';
-      elapsedSeconds = 0;
-      lane = 1;
-      setLane();
-      removeTraffic();
-      overlay.hidden = true;
-      statusEl.textContent = 'Good luck!';
-      running = true;
-      lastSpawn = performance.now();
-      lastScoreUpdate = performance.now();
-      tick.last = 0;
-      animationId = requestAnimationFrame(tick);
-      scoreTimer = setInterval(() => readScore(), 5000);
-      refreshLeaderboard();
-    } catch (error) { statusEl.textContent = error.message; }
-    finally { startButton.disabled = false; }
+      await startGame();
+    } catch (error) {
+      statusEl.textContent = error.message;
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    } finally {
+      startButton.disabled = false;
+    }
   });
   document.addEventListener('keydown', (event) => {
-    if (!running || !['ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D'].includes(event.key)) return;
+    if (event.key === 'Escape' && running && document.fullscreenElement) {
+      // Escape leaves browser fullscreen; the game remains full-viewport until quit.
+      return;
+    }
+    if (!['ArrowLeft', 'ArrowRight', 'a', 'A', 'd', 'D'].includes(event.key)) return;
+    if (!running) return;
     event.preventDefault();
-    if (event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a') lane = Math.max(0, lane - 1);
-    else lane = Math.min(2, lane + 1);
-    setLane();
+    move(event.key === 'ArrowLeft' || event.key.toLowerCase() === 'a' ? -1 : 1);
+  });
+  document.querySelector('#left-button').addEventListener('click', () => move(-1));
+  document.querySelector('#right-button').addEventListener('click', () => move(1));
+  document.querySelector('#quit-button').addEventListener('click', () => endGame('You ended the ride.'));
+  document.querySelector('#play-again').addEventListener('click', async () => {
+    overlay.hidden = true;
+    try {
+      await startGame();
+    } catch (error) {
+      overlayMessage.textContent = error.message;
+      overlay.hidden = false;
+    }
+  });
+  document.querySelector('#back-to-menu').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    gameScreen.hidden = true;
+    welcome.hidden = false;
+    statusEl.textContent = '';
+    gameId = null;
+    nameInput.focus();
+  });
+  document.querySelector('#fullscreen-button').addEventListener('click', () => {
+    if (!document.fullscreenElement && gameScreen.requestFullscreen) gameScreen.requestFullscreen().catch(() => {});
+    else if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   });
   window.addEventListener('resize', setLane);
-  setLane();
-  refreshLeaderboard();
 })();
 </script>
 </body>
